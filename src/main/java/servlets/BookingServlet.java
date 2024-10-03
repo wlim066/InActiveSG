@@ -83,10 +83,12 @@ public class BookingServlet extends HttpServlet {
 				out.print("\"facilityId\": " + booking.getFacilityId() + ",");
 				out.print("\"email\": \"" + escapeJson(booking.getEmail()) + "\",");
 				out.print("\"date\": \"" + escapeJson(booking.getDate()) + "\",");
-				out.print("\"timeslot\": \"" + escapeJson(booking.getTimeslot()) + "\"");
+				out.print("\"timeslot\": \"" + escapeJson(booking.getTimeslot()) + "\",");
+				out.print("\"facilityName\": \"" + escapeJson(booking.getFacilityName()) + "\",");
+				out.print("\"location\": \"" + escapeJson(booking.getLocationName()) + "\"");
 				out.print("}");
 				
-				System.out.println("Booking Servlet: " + booking.getBookingId());
+//				System.out.println("Booking Servlet: " + booking.getBookingId());
 				if (i < bookings.size() - 1) {
 					out.print(","); // Add comma between objects
 				}

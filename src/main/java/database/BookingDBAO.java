@@ -99,19 +99,48 @@ public class BookingDBAO {
 		bookings = new ArrayList();
 
 		try {
-			String selectStatement = "select * " + "from BOOKING";
+//			String selectStatement = "select * " + "from BOOKING";
+			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId," +
+                    "f.name, f.locationName " +
+                    "FROM test.BOOKING b " +
+                    "JOIN test.FACILITY f ON b.facilityId = f.id";
+			
+		
 			getConnection();
 
 			PreparedStatement prepStmt = con.prepareStatement(selectStatement);
 			ResultSet rs = prepStmt.executeQuery();
 
+//			while (rs.next()) {
+//				BookingDetails bd = new BookingDetails(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
+//						rs.getInt(5));
+//
+//				if (rs.getInt(5) > 0) {
+//					bookings.add(bd);
+//				}
+//			}
+			
+//			while (rs.next()) {
+//				BookingDetails bd = new BookingDetails(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
+//						rs.getInt(5), rs.getString(6), rs.getString(7));
+//
+//				if (rs.getInt(7) > 0) {
+//					bookings.add(bd);
+//				}
+//			}
 			while (rs.next()) {
-				BookingDetails bd = new BookingDetails(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
-						rs.getInt(5));
+			    BookingDetails bd = new BookingDetails(
+			        rs.getInt("id"),
+			        rs.getString("email"),
+			        rs.getString("date"),
+			        rs.getString("timeslot"),
+			        rs.getInt("facilityId"),
+			        rs.getString("name"),
+			        rs.getString("locationName")
+			    );
 
-				if (rs.getInt(5) > 0) {
-					bookings.add(bd);
-				}
+			    // Assuming you want to add all bookings to the list
+			    bookings.add(bd);
 			}
 
 			prepStmt.close();

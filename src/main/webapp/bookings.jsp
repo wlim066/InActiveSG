@@ -1,19 +1,3 @@
-<%-- <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>bookings</title>
-<%@ page import = "database.BookingDBAO"%>
-<%BookingDBAO booking = new BookingDBAO();
-booking.getBookings();
-%>
-</head>
-<body>
-bookings test page
-</body>
-</html>  --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
@@ -35,8 +19,10 @@ bookings test page
 			<thead class="thead-dark">
 				<tr>
 					<th scope="col">Booking ID</th>
-					<th scope="col">Facility ID</th>
 					<th scope="col">Email</th>
+					<th scope="col">Facility ID</th>
+					<th scope="col">Facility</th>
+					<th scope="col">Location</th>
 					<th scope="col">Date</th>
 					<th scope="col">Timeslot</th>
 				</tr>
@@ -48,6 +34,12 @@ bookings test page
 
 		<div id="noBookingsAlert" class="alert alert-warning mt-3"
 			style="display: none;" role="alert">No bookings available.</div>
+		<!-- Add the pagination controls here -->
+		<nav aria-label="Bookings pagination">
+			<ul class="pagination justify-content-center" id="pagination">
+				<!-- Pagination items will be dynamically inserted here -->
+			</ul>
+		</nav>
 	</div>
 
 	<!-- JavaScript to fetch and display bookings using AJAX -->
@@ -56,6 +48,9 @@ bookings test page
         window.onload = function() {
             fetchBookings();
         };
+        let bookings = [];
+        let currentPage = 1;
+        const itemsPerPage = 3; 
 
         // Function to fetch bookings via AJAX
         function fetchBookings() {
@@ -65,9 +60,10 @@ bookings test page
 
             xhr.onload = function() {
                 if (xhr.status === 200) {
-                    const bookings = JSON.parse(xhr.responseText);
+                    bookings = JSON.parse(xhr.responseText);
                     console.log("Bookings fetched:", bookings);
-                    populateTable(bookings);
+                    displayBookings(currentPage);
+                    setupPagination();
                 } else {
                     console.error("Failed to fetch bookings:", xhr.status, xhr.statusText);
                 }
@@ -79,61 +75,119 @@ bookings test page
 
             xhr.send();
         }
+ 
+ function displayBookings(page) {
+	 console.log("displayBookings: "+ page);
+	    const tableBody = document.getElementById("bookingsBody");
+	    if (!tableBody) {
+	        console.error("Table body element not found");
+	        return;
+	    }
+	    tableBody.innerHTML = ""; // Clear the existing table rows
 
- function populateTable(bookings) {
-    const tableBody = document.getElementById("bookingsBody");
-    if (!tableBody) {
-        console.error("Table body element not found");
-        return;
-    }
-    tableBody.innerHTML = ""; // Clear the existing table rows
+	    const startIndex = (page - 1) * itemsPerPage;
+	    const endIndex = startIndex + itemsPerPage;
+	    const pageBookings = bookings.slice(startIndex, endIndex);
 
-    if (bookings.length === 0) {
-        console.log("No bookings to display");
-        document.getElementById("noBookingsAlert").style.display = "block";
-        return;
-    }
+	    if (pageBookings.length === 0) {
+	        document.getElementById("noBookingsAlert").style.display = "block";
+	        return;
+	    } else {
+	        document.getElementById("noBookingsAlert").style.display = "none";
+	    }
 
-    bookings.forEach(function(booking, index) {
-        console.log(`Processing booking ${index}:`, booking);
-        const row = document.createElement("tr");
-        
-        // Debug: Log each property individually
-/*         console.log(`Booking ${index} properties:`, {
-            bookingId: booking.bookingId,
-            facilityId: booking.facilityId,
-            email: booking.email,
-            date: booking.date,
-            timeslot: booking.timeslot
-        }); */
+	    pageBookings.forEach(function(booking, index) {
+	        const row = document.createElement("tr");
+	        
+	        const idCell = document.createElement("td");
+	        idCell.textContent = booking.bookingId || '';
+	        row.appendChild(idCell);
+	        
+	        const emailCell = document.createElement("td");
+	        emailCell.textContent = booking.email || '';
+	        row.appendChild(emailCell);
 
-        // Create cells individually for better debugging
-        const idCell = document.createElement("td");
-        idCell.textContent = booking.bookingId || '';
-        row.appendChild(idCell);
+	        const facilityCell = document.createElement("td");
+	        facilityCell.textContent = booking.facilityId || '';
+	        row.appendChild(facilityCell);
+	        
+	        const facilityNameCell = document.createElement("td");
+	        facilityNameCell.textContent = booking.facilityName || '';
+	        row.appendChild(facilityNameCell);
+	      
+	        const facilityLocationCell = document.createElement("td");
+	        facilityLocationCell.textContent = booking.location || '';
+	        row.appendChild(facilityLocationCell);
 
-        const facilityCell = document.createElement("td");
-        facilityCell.textContent = booking.facilityId || '';
-        row.appendChild(facilityCell);
+	        const dateCell = document.createElement("td");
+	        dateCell.textContent = booking.date || '';
+	        row.appendChild(dateCell);
 
-        const emailCell = document.createElement("td");
-        emailCell.textContent = booking.email || '';
-        row.appendChild(emailCell);
+	        const timeslotCell = document.createElement("td");
+	        timeslotCell.textContent = booking.timeslot || '';
+	        row.appendChild(timeslotCell);
 
-        const dateCell = document.createElement("td");
-        dateCell.textContent = booking.date || '';
-        row.appendChild(dateCell);
+	        tableBody.appendChild(row);
+	    });
+	}
+ function setupPagination() {
+	 console.log("Setting up pagination");
+	    const pageCount = Math.ceil(bookings.length / itemsPerPage);
+	    const paginationElement = document.getElementById("pagination");
+	    paginationElement.innerHTML = "";
 
-        const timeslotCell = document.createElement("td");
-        timeslotCell.textContent = booking.timeslot || '';
-        row.appendChild(timeslotCell);
+	    // Previous button
+	    addPaginationItem(paginationElement, "Previous", currentPage > 1, () => {
+	        if (currentPage > 1) {
+	            currentPage--;
+	            displayBookings(currentPage);
+	            setupPagination();
+	        }
+	    });
 
-        tableBody.appendChild(row);
-        console.log(`Row ${index} added to table:`, row.innerHTML);
-    });
+	    // Page numbers
+	    const maxPagesToShow = 5;
+	    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+	    let endPage = Math.min(pageCount, startPage + maxPagesToShow - 1);
+	    startPage = Math.max(1, endPage - maxPagesToShow + 1);
 
-    console.log("Table population complete");
-}
+	    for (let i = startPage; i <= endPage; i++) {
+	        addPaginationItem(paginationElement, i.toString(), true, () => {
+	            currentPage = i;
+	            displayBookings(currentPage);
+	            setupPagination();
+	        }, i === currentPage);
+	    }
+
+	    // Next button
+	    addPaginationItem(paginationElement, "Next", currentPage < pageCount, () => {
+	        if (currentPage < pageCount) {
+	            currentPage++;
+	            displayBookings(currentPage);
+	            setupPagination();
+	        }
+	    });
+	}
+
+	function addPaginationItem(parent, text, enabled, onClick, isActive = false) {
+	    const li = document.createElement("li");
+	    li.classList.add("page-item");
+	    if (!enabled) li.classList.add("disabled");
+	    if (isActive) li.classList.add("active");
+	    const a = document.createElement("a");
+	    a.classList.add("page-link");
+	    a.href = "#";
+	    a.textContent = text;
+	    if (enabled) {
+	        a.addEventListener("click", function(e) {
+	            e.preventDefault();
+	            onClick();
+	        });
+	    }
+	    li.appendChild(a);
+	    parent.appendChild(li);
+	}
+	
     </script>
 
 	<!-- Include Bootstrap JS (optional for interactive components) -->

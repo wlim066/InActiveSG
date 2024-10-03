@@ -33,16 +33,20 @@ public class BookingDetails implements Comparable<BookingDetails>{
 	private String email = null;
 	private String date = null;
 	private String timeslot = null;
+	private String facilityName = null;
+	private String locationName = null;
 
 	public BookingDetails() {
 	}
 
-	public BookingDetails(int bookingId, String email, String date, String timeslot, int facilityId) {
+	public BookingDetails(int bookingId, String email, String date, String timeslot, int facilityId, String facilityName, String locationName) {
 		this.bookingId = bookingId;
 		this.facilityId = facilityId;
 		this.email = email;
 		this.date = date;
 		this.timeslot = timeslot;
+		this.facilityName = facilityName;
+		this.locationName = locationName;
 	}
 	
     // Implement the compareTo method to define how to compare BookingDetails objects
@@ -91,10 +95,21 @@ public class BookingDetails implements Comparable<BookingDetails>{
 		this.timeslot = timeslot;
 	}
 
-//    public int compareTo(Object o) {
-//        BookingDetails n = (BookingDetails) o;
-//        int lastCmp = title.compareTo(n.title);
-//
-//        return (lastCmp);
-//    }
+	public String getFacilityName() {
+		return facilityName;
+	}
+
+	public void setFacilityName(String facilityName) {
+		this.facilityName = facilityName;
+	}
+
+	public String getLocationName() {
+		return locationName;
+	}
+
+	public void setLocationName(String locationName) {
+		this.locationName = locationName;
+	}
+
+
 }
