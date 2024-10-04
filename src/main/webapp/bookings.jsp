@@ -50,7 +50,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="deleteConfirmModalLabel">Confirm
-						Deletion</h5>
+						Cancellation</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal"
 						aria-label="Close"></button>
 				</div>
@@ -89,7 +89,7 @@
         // Function to fetch bookings via AJAX
         function fetchBookings() {
             const xhr = new XMLHttpRequest();
-            xhr.open("GET", "BookingServlet", true); // Adjust URL based on servlet mapping
+            xhr.open("GET", "BookingServlet", true);
             xhr.setRequestHeader("Content-Type", "application/json");
 
             xhr.onload = function() {

@@ -40,7 +40,6 @@ import java.security.SecureRandom;
 import java.util.Random;
 import java.util.Base64;
 
-// The instance of BookDBAO gets created when the application
 // is deployed. It maintains the Connection object to the
 // database. The Connection object is created from DataSource
 // object, which is retrieved through JNDI.

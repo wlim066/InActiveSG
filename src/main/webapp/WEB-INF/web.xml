@@ -29,4 +29,14 @@
     <servlet-name>BookingServlet</servlet-name>
     <url-pattern>/BookingServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>FacilityServlet</display-name>
+    <servlet-name>FacilityServlet</servlet-name>
+    <servlet-class>servlets.FacilityServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>FacilityServlet</servlet-name>
+    <url-pattern>/FacilityServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

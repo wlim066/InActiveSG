@@ -38,8 +38,9 @@ import java.util.*;
 // object, which is retrieved through JNDI.
 // For more information on DataSource, please see
 // http://java.sun.com/j2se/1.4.2/docs/api/javax/sql/DataSource.html.
-public class BookingDBAO {
-	private ArrayList<BookingDetails> bookings;
+public class FacilityDBAO {
+	private ArrayList<FacilityDetails> facilities;
+	private ArrayList<String> facilitiesLocation;
 	Connection con;
 	private boolean conFree = true;
 
@@ -49,13 +50,13 @@ public class BookingDBAO {
 	public static String username = "root";
 	public static String password = "password";
 
-	public BookingDBAO() throws Exception {
+	public FacilityDBAO() throws Exception {
 		try {
 			Class.forName(dbdriver);
 			con = DriverManager.getConnection(url, username, password);
 			System.out.println("SUCCESS!" + con);
 		} catch (Exception ex) {
-			System.out.println("Exception in BookingDBAO: " + ex);
+			System.out.println("Exception in FacilityDBAO: " + ex);
 			throw new Exception("Couldn't open connection to database: " + ex.getMessage());
 		}
 	}
@@ -94,62 +95,55 @@ public class BookingDBAO {
 		notify();
 	}
 
-	public List getBookings() {
-		bookings = new ArrayList();
+	public List<String> getFacilities() {
+		List<String> facilities = new ArrayList<>();
 
 		try {
-//			String selectStatement = "select * " + "from BOOKING";
-			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId,"
-					+ "f.name, f.locationName " + "FROM test.BOOKING b "
-					+ "JOIN test.FACILITY f ON b.facilityId = f.id";
+			String selectStatement = "select DISTINCT(name) from FACILITY";
 
 			getConnection();
 
 			PreparedStatement prepStmt = con.prepareStatement(selectStatement);
 			ResultSet rs = prepStmt.executeQuery();
 			while (rs.next()) {
-				BookingDetails bd = new BookingDetails(rs.getInt("id"), rs.getString("email"), rs.getString("date"),
-						rs.getString("timeslot"), rs.getInt("facilityId"), rs.getString("name"),
-						rs.getString("locationName"));
-
+				String facilityName = rs.getString("name");
 				// Assuming you want to add all bookings to the list
-				bookings.add(bd);
+				facilities.add(facilityName);
 			}
 
 			prepStmt.close();
 
-			System.out.println("BookingDBAO Get bookings:" + bookings);
+			System.out.println("FacilityDBAO Get facilities:" + facilities);
 		} catch (SQLException ex) {
-			System.out.println("getBookings error" + ex);
+			System.out.println("getfacilities error" + ex);
 		}
 
 		releaseConnection();
-		Collections.sort(bookings);
+		Collections.sort(facilities);
 
-		return bookings;
+		return facilities;
 	}
 
-	public boolean deleteBooking(int bookingId) {
-		boolean success = false;
-		String deleteStatement = "DELETE FROM test.BOOKING WHERE id = ?";
+	public List<String> getFacilityLocation(String facilityName) {
+		facilitiesLocation = new ArrayList<String>();
+		System.out.println("getFacilityLocation: "+ facilityName);
+		String selectStatement = "select locationName " + "from FACILITY WHERE name = ?";
 
-		try {
-			getConnection();
-			PreparedStatement prepStmt = con.prepareStatement(deleteStatement);
-			prepStmt.setInt(1, bookingId);
+		getConnection();
+		try (PreparedStatement ps = con.prepareStatement(selectStatement)) {
+			ps.setString(1, facilityName); // Set the facilityId parameter
+			ResultSet rs = ps.executeQuery();
 
-			int rowsAffected = prepStmt.executeUpdate();
-			if (rowsAffected > 0) {
-				success = true;
+			while (rs.next()) {
+				String location = rs.getString("locationName"); // Get the location
+				facilitiesLocation.add(location); // Add the location to the list
 			}
 
-			prepStmt.close();
-		} catch (SQLException ex) {
-			System.out.println("Delete booking error: " + ex.getMessage());
-		} finally {
-			releaseConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-
-		return success;
+		releaseConnection();
+		Collections.sort(facilitiesLocation);
+		return facilitiesLocation;
 	}
 }
