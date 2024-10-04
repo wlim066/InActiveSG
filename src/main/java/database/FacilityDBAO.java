@@ -127,7 +127,7 @@ public class FacilityDBAO {
 	public List<String> getFacilityLocation(String facilityName) {
 		facilitiesLocation = new ArrayList<String>();
 		System.out.println("getFacilityLocation: "+ facilityName);
-		String selectStatement = "select locationName " + "from FACILITY WHERE name = ?";
+		String selectStatement = "select locationName " + "from FACILITY WHERE status = 1 AND name = ?";
 
 		getConnection();
 		try (PreparedStatement ps = con.prepareStatement(selectStatement)) {
