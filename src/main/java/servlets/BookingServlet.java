@@ -87,7 +87,7 @@ public class BookingServlet extends HttpServlet {
 				out.print("\"facilityName\": \"" + escapeJson(booking.getFacilityName()) + "\",");
 				out.print("\"location\": \"" + escapeJson(booking.getLocationName()) + "\"");
 				out.print("}");
-				
+
 //				System.out.println("Booking Servlet: " + booking.getBookingId());
 				if (i < bookings.size() - 1) {
 					out.print(","); // Add comma between objects
@@ -100,6 +100,41 @@ public class BookingServlet extends HttpServlet {
 		}
 	}
 
+	@Override
+	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String bookingIdStr = request.getParameter("id");
+		if (bookingIdStr == null || bookingIdStr.isEmpty()) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("Booking ID is required");
+			return;
+		}
+
+		try {
+			int bookingId = Integer.parseInt(bookingIdStr);
+			boolean deleted = bookingDBAO.deleteBooking(bookingId);
+
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			PrintWriter out = response.getWriter();
+
+			if (deleted) {
+				response.setStatus(HttpServletResponse.SC_OK);
+				out.print("{\"success\": true, \"message\": \"Booking deleted successfully\"}");
+			} else {
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				out.print("{\"success\": false, \"message\": \"Booking not found or could not be deleted\"}");
+			}
+			out.flush();
+		} catch (NumberFormatException e) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("Invalid booking ID format");
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().write("Error deleting booking: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
@@ -107,7 +142,13 @@ public class BookingServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		String method = request.getParameter("_method");
+		if ("DELETE".equalsIgnoreCase(method)) {
+			doDelete(request, response);
+		} else {
+			// Handle other POST requests or call doGet() if that's your intended behavior
+			doGet(request, response);
+		}
 	}
 
 }

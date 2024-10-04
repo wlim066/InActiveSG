@@ -40,7 +40,7 @@ import java.util.*;
 // For more information on DataSource, please see
 // http://java.sun.com/j2se/1.4.2/docs/api/javax/sql/DataSource.html.
 public class BookingDBAO {
-	private ArrayList<BookingDetails> bookings ;
+	private ArrayList<BookingDetails> bookings;
 	Connection con;
 	private boolean conFree = true;
 
@@ -100,52 +100,26 @@ public class BookingDBAO {
 
 		try {
 //			String selectStatement = "select * " + "from BOOKING";
-			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId," +
-                    "f.name, f.locationName " +
-                    "FROM test.BOOKING b " +
-                    "JOIN test.FACILITY f ON b.facilityId = f.id";
-			
-		
+			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId,"
+					+ "f.name, f.locationName " + "FROM test.BOOKING b "
+					+ "JOIN test.FACILITY f ON b.facilityId = f.id";
+
 			getConnection();
 
 			PreparedStatement prepStmt = con.prepareStatement(selectStatement);
 			ResultSet rs = prepStmt.executeQuery();
-
-//			while (rs.next()) {
-//				BookingDetails bd = new BookingDetails(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
-//						rs.getInt(5));
-//
-//				if (rs.getInt(5) > 0) {
-//					bookings.add(bd);
-//				}
-//			}
-			
-//			while (rs.next()) {
-//				BookingDetails bd = new BookingDetails(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
-//						rs.getInt(5), rs.getString(6), rs.getString(7));
-//
-//				if (rs.getInt(7) > 0) {
-//					bookings.add(bd);
-//				}
-//			}
 			while (rs.next()) {
-			    BookingDetails bd = new BookingDetails(
-			        rs.getInt("id"),
-			        rs.getString("email"),
-			        rs.getString("date"),
-			        rs.getString("timeslot"),
-			        rs.getInt("facilityId"),
-			        rs.getString("name"),
-			        rs.getString("locationName")
-			    );
+				BookingDetails bd = new BookingDetails(rs.getInt("id"), rs.getString("email"), rs.getString("date"),
+						rs.getString("timeslot"), rs.getInt("facilityId"), rs.getString("name"),
+						rs.getString("locationName"));
 
-			    // Assuming you want to add all bookings to the list
-			    bookings.add(bd);
+				// Assuming you want to add all bookings to the list
+				bookings.add(bd);
 			}
 
 			prepStmt.close();
-			
-			System.out.println("BookingDBAO Get bookings:"+ bookings);
+
+			System.out.println("BookingDBAO Get bookings:" + bookings);
 		} catch (SQLException ex) {
 			System.out.println("getBookings error" + ex);
 		}
@@ -156,34 +130,27 @@ public class BookingDBAO {
 		return bookings;
 	}
 
-//    public BookingDetails getBookingDetails(int bookingId)
-//    {
-//        try {
-//            String selectStatement = "select * " + "from books where id = ? ";
-//            getConnection();
-//            
-//            PreparedStatement prepStmt = con.prepareStatement(selectStatement);
-//            prepStmt.setString(1, bookId);
-//            
-//            ResultSet rs = prepStmt.executeQuery();
-//            
-//            if (rs.next()) {
-//                BookingDetails bd =
-//                        new BookingDetails(rs.getString(1), rs.getString(2),
-//                        rs.getString(3), rs.getString(4), rs.getFloat(5),
-//                        rs.getBoolean(6), rs.getInt(7), rs.getString(8),
-//                        rs.getInt(9));
-//                prepStmt.close();
-//                releaseConnection();
-//                
-//                return bd;
-//            } else {
-//                prepStmt.close();
-//                releaseConnection();
-//            }
-//        } catch (SQLException ex) {
-//            releaseConnection();
-//            System.out.println("getBookDetails error:" + ex);
-//        }
-//    }
+	public boolean deleteBooking(int bookingId) {
+		boolean success = false;
+		String deleteStatement = "DELETE FROM test.BOOKING WHERE id = ?";
+
+		try {
+			getConnection();
+			PreparedStatement prepStmt = con.prepareStatement(deleteStatement);
+			prepStmt.setInt(1, bookingId);
+
+			int rowsAffected = prepStmt.executeUpdate();
+			if (rowsAffected > 0) {
+				success = true;
+			}
+
+			prepStmt.close();
+		} catch (SQLException ex) {
+			System.out.println("Delete booking error: " + ex.getMessage());
+		} finally {
+			releaseConnection();
+		}
+
+		return success;
+	}
 }

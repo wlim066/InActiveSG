@@ -25,6 +25,7 @@
 					<th scope="col">Location</th>
 					<th scope="col">Date</th>
 					<th scope="col">Timeslot</th>
+					<th scope="col">Cancel Booking</th>
 				</tr>
 			</thead>
 			<tbody id="bookingsBody">
@@ -40,6 +41,37 @@
 				<!-- Pagination items will be dynamically inserted here -->
 			</ul>
 		</nav>
+	</div>
+
+	<!-- Delete Confirmation Modal -->
+	<div class="modal fade" id="deleteConfirmModal" tabindex="-1"
+		aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteConfirmModalLabel">Confirm
+						Deletion</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to cancel this booking?</p>
+					<dl class="row">
+						<dt class="col-sm-3">Location:</dt>
+						<dd class="col-sm-9" id="modalLocation"></dd>
+						<dt class="col-sm-3">Date:</dt>
+						<dd class="col-sm-9" id="modalDate"></dd>
+						<dt class="col-sm-3">Timeslot:</dt>
+						<dd class="col-sm-9" id="modalTimeslot"></dd>
+					</dl>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- JavaScript to fetch and display bookings using AJAX -->
@@ -74,6 +106,32 @@
             };
 
             xhr.send();
+        }
+        
+        function deleteBooking(bookingId) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "BookingServlet", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Remove the deleted booking from the array
+                    bookings = bookings.filter(booking => booking.bookingId !== bookingId);
+                    // Refresh the display
+                    displayBookings(currentPage);
+                    setupPagination();
+                } else {
+                    console.error("Failed to delete booking:", xhr.status, xhr.statusText);
+                    alert("Failed to delete booking. Please try again.");
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error("Network error while deleting booking");
+                alert("Network error. Please try again.");
+            };
+
+            xhr.send("_method=DELETE&id=" + encodeURIComponent(bookingId));
         }
  
  function displayBookings(page) {
@@ -126,10 +184,43 @@
 	        const timeslotCell = document.createElement("td");
 	        timeslotCell.textContent = booking.timeslot || '';
 	        row.appendChild(timeslotCell);
+	        
+            const actionCell = document.createElement("td");
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+            deleteButton.onclick = function() {
+                showCancelConfirmModal(booking);
+            };
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
 
 	        tableBody.appendChild(row);
 	    });
 	}
+ 
+/*  function confirmDelete(bookingId) {
+     if (confirm("Are you sure you want to delete this booking?")) {
+         deleteBooking(bookingId);
+     }
+ }
+  */
+  
+  function showCancelConfirmModal(booking) {
+	  const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+	  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+	  // Populate the modal with booking details
+	  document.getElementById('modalLocation').textContent = booking.location || 'N/A';
+	  document.getElementById('modalDate').textContent = booking.date || 'N/A';
+	  document.getElementById('modalTimeslot').textContent = booking.timeslot || 'N/A';
+	  confirmDeleteBtn.onclick = function() {
+	    deleteBooking(booking.bookingId);
+	    modal.hide();
+	  };
+	  
+	  modal.show();
+	}
+  
  function setupPagination() {
 	 console.log("Setting up pagination");
 	    const pageCount = Math.ceil(bookings.length / itemsPerPage);
