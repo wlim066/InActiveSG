@@ -59,6 +59,8 @@
 					<dl class="row">
 						<dt class="col-sm-3">Location:</dt>
 						<dd class="col-sm-9" id="modalLocation"></dd>
+						<dt class="col-sm-3">Facility:</dt>
+						<dd class="col-sm-9" id="modalFacility"></dd>
 						<dt class="col-sm-3">Date:</dt>
 						<dd class="col-sm-9" id="modalDate"></dd>
 						<dt class="col-sm-3">Timeslot:</dt>
@@ -198,19 +200,13 @@
 	        tableBody.appendChild(row);
 	    });
 	}
- 
-/*  function confirmDelete(bookingId) {
-     if (confirm("Are you sure you want to delete this booking?")) {
-         deleteBooking(bookingId);
-     }
- }
-  */
   
   function showCancelConfirmModal(booking) {
 	  const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
 	  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 	  // Populate the modal with booking details
 	  document.getElementById('modalLocation').textContent = booking.location || 'N/A';
+	  document.getElementById('modalFacility').textContent = booking.facilityName || 'N/A';
 	  document.getElementById('modalDate').textContent = booking.date || 'N/A';
 	  document.getElementById('modalTimeslot').textContent = booking.timeslot || 'N/A';
 	  confirmDeleteBtn.onclick = function() {
