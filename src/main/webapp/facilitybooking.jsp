@@ -35,6 +35,9 @@
 				</select>
 			</div>
 
+			<!-- Hidden input to store the selected facility.id -->
+			<input type="hidden" id="facilityId" name="facilityId" />
+
 			<!-- Date Selection -->
 			<div class="mb-3">
 				<label for="date" class="form-label">Select Date</label> <input
@@ -167,6 +170,7 @@
                     const option = document.createElement("option");
                     option.value = location.facilityLocation;
                     option.textContent = location.facilityLocation;
+                    option.setAttribute('data-facility-id', location.facilityId); // Store the facility id in a data attribute
                     locationSelect.appendChild(option);
                 });
             } else {
@@ -183,6 +187,11 @@
 
     // Load available timeslots when a location is selected
     $("#location").change(function() {
+        const selectedOption = $(this).find(":selected"); // Get the selected option
+        const facilityId = selectedOption.data('facility-id'); // Get the facilityId from data attribute
+
+        // Set the facilityId in the hidden input field
+        $("#facilityId").val(facilityId);
     	$("#date").val('');
     });
     
@@ -197,9 +206,12 @@
             $("#timeslot").html('<option value="">Choose a timeslot</option>'); // Reset timeslots
         }
     });
-
+    
+    
     // Function to fetch available timeslots based on the selected location and facility
     function loadTimeslots(location, facilityName, selectedDate) {
+    	console.log("facility id: " + $("#facilityId").val());
+
         const xhr = new XMLHttpRequest();
         xhr.open("GET", `FacilityServlet?action=getFacilityTimeslots&facilityName=` + encodeURIComponent(facilityName) +`&location=` +encodeURIComponent(location)
         		 +`&date=` +encodeURIComponent(selectedDate), true);
