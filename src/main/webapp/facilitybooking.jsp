@@ -98,8 +98,14 @@
 	// Load facilities on page load
     window.onload = function() {
         loadFacilities();
+        setMinDate();
     };
 
+    function setMinDate() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('min', today);
+    }
+    
     // Function to fetch facilities
     function loadFacilities() {
         const xhr = new XMLHttpRequest();
@@ -138,6 +144,7 @@
             $("#location").html('<option value="">Choose a location</option>'); // Reset locations
             $("#timeslot").html('<option value="">Choose a timeslot</option>'); // Reset timeslots
         }
+        $("#date").val('');
     });
 
     // Function to fetch locations based on the selected facility
@@ -176,18 +183,28 @@
 
     // Load available timeslots when a location is selected
     $("#location").change(function() {
-        const locationId = $(this).val();
-        if (locationId) {
-            loadTimeslots(locationId);
+    	$("#date").val('');
+    });
+    
+    // Load available timeslots when a location is selected
+    $("#date").change(function() {
+    	const selectedDate = $(this).val();
+        const location = $("#location").val();
+        const facilityName = $("#facility").val(); // Get the selected facility name
+        if (location && facilityName) {
+            loadTimeslots(location, facilityName, selectedDate);
         } else {
             $("#timeslot").html('<option value="">Choose a timeslot</option>'); // Reset timeslots
         }
     });
 
-    // Function to fetch available timeslots based on the selected location
-    function loadTimeslots(locationId) {
+    // Function to fetch available timeslots based on the selected location and facility
+    function loadTimeslots(location, facilityName, selectedDate) {
         const xhr = new XMLHttpRequest();
-        xhr.open("GET", `TimeslotServlet?locationId=${locationId}`, true);
+        xhr.open("GET", `FacilityServlet?action=getFacilityTimeslots&facilityName=` + encodeURIComponent(facilityName) +`&location=` +encodeURIComponent(location)
+        		 +`&date=` +encodeURIComponent(selectedDate), true);
+        console.log("url:"+ `TimeslotServlet?action=getFacilityTimeslots&facilityName=` + encodeURIComponent(facilityName) +`&location=` +encodeURIComponent(location)
+       		 +`&date=` +encodeURIComponent(selectedDate));
         xhr.setRequestHeader("Content-Type", "application/json");
 
         xhr.onload = function() {
@@ -198,8 +215,8 @@
 
                 timeslots.forEach(timeslot => {
                     const option = document.createElement("option");
-                    option.value = timeslot.id;
-                    option.textContent = timeslot.slot;
+                    option.value = timeslot.facilityTimeslot;
+                    option.textContent = timeslot.facilityTimeslot;
                     timeslotSelect.appendChild(option);
                 });
             } else {

@@ -15,6 +15,11 @@ public class FacilityDetails implements Comparable<FacilityDetails> {
 		this.locationName = locationName;
 		this.status = status;
 	}
+	
+	public FacilityDetails (int facilityId, String locationName) {
+		this.facilityId = facilityId;
+		this.locationName = locationName;
+	}
 
 	// Implement the compareTo method to define how to compare BookingDetails
 	// objects
