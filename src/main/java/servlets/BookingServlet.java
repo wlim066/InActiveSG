@@ -135,6 +135,44 @@ public class BookingServlet extends HttpServlet {
 		}
 	}
 
+	protected void doInsert(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		System.out.println("doInsert");
+		String facilityIdStr = request.getParameter("facilityId");
+		String date = request.getParameter("date");
+		String timeslot = request.getParameter("timeslot");
+		String email = request.getParameter("email");
+		if (facilityIdStr == null || facilityIdStr.isEmpty()) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("Facility ID is required");
+			return;
+		}
+
+		try {
+			int facilityId = Integer.parseInt(facilityIdStr);
+			boolean inserted = bookingDBAO.createBooking(email, date, timeslot, facilityId);
+
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			PrintWriter out = response.getWriter();
+
+			if (inserted) {
+				response.setStatus(HttpServletResponse.SC_OK);
+				out.print("{\"success\": true, \"message\": \"Booking inserted successfully\"}");
+			} else {
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				out.print("{\"success\": false, \"message\": \"Booking cannot be inserted\"}");
+			}
+			out.flush();
+		} catch (NumberFormatException e) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("Invalid booking ID format");
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().write("Error deleting booking: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
@@ -143,8 +181,12 @@ public class BookingServlet extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String method = request.getParameter("_method");
+		String facilityId = request.getParameter("facilityId");
+		System.out.println("BookingServlet doPost:" + method + facilityId);
 		if ("DELETE".equalsIgnoreCase(method)) {
 			doDelete(request, response);
+		} else if ("INSERT".equalsIgnoreCase(method)) {
+			doInsert(request, response);
 		} else {
 			// Handle other POST requests or call doGet() if that's your intended behavior
 			doGet(request, response);

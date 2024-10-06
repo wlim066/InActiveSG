@@ -17,7 +17,7 @@
 		<h1 class="text-center">Book a Facility</h1>
 
 		<!-- Booking Form -->
-		<form id="bookingForm" method="post" action="BookingServlet"
+		<form id="bookingForm" method="post""
 			class="mt-4">
 			<!-- Facility Selection -->
 			<div class="mb-3">
@@ -53,10 +53,10 @@
 			</div>
 
 			<!-- User Information -->
-			<div class="mb-3">
+<!-- 			<div class="mb-3">
 				<label for="name" class="form-label">Full Name</label> <input
 					type="text" class="form-control" id="name" name="name" required>
-			</div>
+			</div> -->
 
 			<div class="mb-3">
 				<label for="email" class="form-label">Email Address</label> <input
@@ -107,6 +107,14 @@
     function setMinDate() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('date').setAttribute('min', today);
+    }
+    
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2); // Month is zero-based
+        const day = ('0' + date.getDate()).slice(-2);
+        return `${year}-${month}-${day}`;
     }
     
     // Function to fetch facilities
@@ -241,6 +249,100 @@
         };
 
         xhr.send();
+    }
+    
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the default form submission
+        submitBooking();
+    });
+    
+    
+    function submitBooking() {
+        console.log("submitBooking function called");
+        const facilityId = document.getElementById('facilityId').value;
+        const date = document.getElementById('date').value;
+        const timeslot = document.getElementById('timeslot').value;
+        const email = document.getElementById('email').value;
+
+        // Create XHR object
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "BookingServlet", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success) {
+                        // Show success message
+                        alert('Booking successful: ' + data.message);
+                        // Redirect to bookings.jsp
+                        window.location.href = 'bookings.jsp';
+                        // Optionally, reset the form
+                        document.getElementById('bookingForm').reset();
+                    } else {
+                        // Show error message
+                        alert('Booking failed: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON response:', error);
+                    alert('An error occurred while processing your booking.');
+                }
+            } else {
+                console.error("Failed to submit booking:", xhr.status, xhr.statusText);
+                alert("Failed to submit booking. Please try again.");
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error("Network error while submitting booking");
+            alert("Network error. Please try again.");
+        };
+
+        // Prepare data
+        const formData = new URLSearchParams();
+        formData.append('_method', 'INSERT');
+        formData.append('facilityId', facilityId);
+        formData.append('date', date);
+        formData.append('timeslot', timeslot);
+        formData.append('email', email);
+
+        // Log data being sent
+        console.log("Sending data:");
+        console.log("_method: " + formData.get('_method'));
+        console.log("Facility ID: " + formData.get('facilityId'));
+        console.log("Date: " + formData.get('date'));
+        console.log("Timeslot: " + formData.get('timeslot'));
+        console.log("Email: " + formData.get('email'));
+
+        // Send the request
+        xhr.send(formData.toString());
+    }
+    
+    function deleteBooking(bookingId) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "BookingServlet", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Remove the deleted booking from the array
+                bookings = bookings.filter(booking => booking.bookingId !== bookingId);
+                // Refresh the display
+                displayBookings(currentPage);
+                setupPagination();
+            } else {
+                console.error("Failed to delete booking:", xhr.status, xhr.statusText);
+                alert("Failed to delete booking. Please try again.");
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error("Network error while deleting booking");
+            alert("Network error. Please try again.");
+        };
+
+        xhr.send("_method=DELETE&id=" + encodeURIComponent(bookingId));
     }
 	</script>
 </body>

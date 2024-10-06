@@ -94,14 +94,12 @@ public class BookingDBAO {
 		notify();
 	}
 
-	public List getBookings() {
+	public List<BookingDetails> getBookings() {
 		bookings = new ArrayList();
-
 		try {
-//			String selectStatement = "select * " + "from BOOKING";
 			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId,"
 					+ "f.name, f.locationName " + "FROM test.BOOKING b "
-					+ "JOIN test.FACILITY f ON b.facilityId = f.id";
+					+ "JOIN test.FACILITY f ON b.facilityId = f.id ORDER BY date,timeslot ASC";
 
 			getConnection();
 
@@ -124,7 +122,7 @@ public class BookingDBAO {
 		}
 
 		releaseConnection();
-		Collections.sort(bookings);
+//		Collections.sort(bookings);
 
 		return bookings;
 	}
@@ -146,6 +144,34 @@ public class BookingDBAO {
 			prepStmt.close();
 		} catch (SQLException ex) {
 			System.out.println("Delete booking error: " + ex.getMessage());
+		} finally {
+			releaseConnection();
+		}
+
+		return success;
+	}
+	
+	public boolean createBooking(String email, String date, String timeslot, int facilityId) {
+		boolean success = false;
+		String insertSQL = "INSERT INTO booking (email, date, timeslot, facilityId) VALUES (?, ?, ?, ?)";
+
+
+		try {
+			getConnection();
+			PreparedStatement prepStmt = con.prepareStatement(insertSQL);
+			prepStmt.setString(1, email);
+			prepStmt.setString(2, date);
+			prepStmt.setString(3, timeslot);
+			prepStmt.setInt(4, facilityId);
+
+			int rowsAffected = prepStmt.executeUpdate();
+			if (rowsAffected > 0) {
+				success = true;
+			}
+
+			prepStmt.close();
+		} catch (SQLException ex) {
+			System.out.println("Insert booking error: " + ex.getMessage());
 		} finally {
 			releaseConnection();
 		}

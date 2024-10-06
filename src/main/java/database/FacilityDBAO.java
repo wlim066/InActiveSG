@@ -126,33 +126,33 @@ public class FacilityDBAO {
 	}
 
 	public List<FacilityDetails> getFacilityLocation(String facilityName) {
-	    List<FacilityDetails> facilitiesLocation = new ArrayList<>();
-	    System.out.println("getFacilityLocation: " + facilityName);
-	    String selectStatement = "SELECT id, locationName FROM FACILITY WHERE status = 1 AND name = ?";
+		List<FacilityDetails> facilitiesLocation = new ArrayList<>();
+		System.out.println("getFacilityLocation: " + facilityName);
+		String selectStatement = "SELECT id, locationName FROM FACILITY WHERE status = 1 AND name = ?";
 
-	    getConnection();
-	    try (PreparedStatement ps = con.prepareStatement(selectStatement)) {
-	        ps.setString(1, facilityName);
-	        try (ResultSet rs = ps.executeQuery()) {
-	            while (rs.next()) {
-	                int facilityId = rs.getInt("id");
-	                String location = rs.getString("locationName");
-	                facilitiesLocation.add(new FacilityDetails(facilityId, location));
-	            }
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    } finally {
-	        releaseConnection();
-	    }
+		getConnection();
+		try (PreparedStatement ps = con.prepareStatement(selectStatement)) {
+			ps.setString(1, facilityName);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					int facilityId = rs.getInt("id");
+					String location = rs.getString("locationName");
+					facilitiesLocation.add(new FacilityDetails(facilityId, location));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			releaseConnection();
+		}
 
-	    Collections.sort(facilitiesLocation);
-	    return facilitiesLocation;
+		Collections.sort(facilitiesLocation);
+		return facilitiesLocation;
 	}
-	
+
 	public List<String> getFacilityTimeslot(String facilityName, String location, String date) {
 		facilityTimeslot = new ArrayList<String>();
-		System.out.println("getFacilityTimeslot: "+ facilityName + location + date);
+		System.out.println("getFacilityTimeslot: " + facilityName + location + date);
 		String selectStatement = "select booking.timeslot from FACILITY,BOOKING WHERE status = 1 AND name = ? AND locationName = ? AND date = ? AND FACILITY.id = BOOKING.facilityId";
 
 		getConnection();

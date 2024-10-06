@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.PrintWriter;
 
+//for timeslot handling
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
+
 import database.BookingDetails;
 import database.FacilityDBAO;
 import database.FacilityDetails;
@@ -180,6 +186,24 @@ public class FacilityServlet extends HttpServlet {
 			// Find available timeslots
 			List<String> availableTimeslots = new ArrayList<>(allTimeslots);
 			availableTimeslots.removeAll(bookedTimeslots);
+			
+			//handling if selected date is current date.
+	        LocalDate selectedDate = LocalDate.parse(facilityDate);
+	        LocalDate today = LocalDate.now();
+	        
+	        if (selectedDate.isEqual(today)) {
+	            LocalTime currentTime = LocalTime.now();
+	            availableTimeslots = availableTimeslots.stream()
+	                .filter(timeslot -> {
+	                    String startTime = timeslot.split("-")[0];
+	                    LocalTime slotTime = LocalTime.of(
+	                        Integer.parseInt(startTime.substring(0, 2)),
+	                        Integer.parseInt(startTime.substring(2))
+	                    );
+	                    return slotTime.isAfter(currentTime);
+	                })
+	                .collect(Collectors.toList());
+	        }
 
 			// Set response type to JSON
 			response.setContentType("application/json");
