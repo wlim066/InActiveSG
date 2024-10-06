@@ -99,7 +99,7 @@ public class BookingDBAO {
 		try {
 			String selectStatement = "SELECT b.id, b.email, b.date, b.timeslot, b.facilityId,"
 					+ "f.name, f.locationName " + "FROM test.BOOKING b "
-					+ "JOIN test.FACILITY f ON b.facilityId = f.id ORDER BY date,timeslot ASC";
+					+ "JOIN test.FACILITY f ON b.facilityId = f.id";
 
 			getConnection();
 
@@ -122,7 +122,7 @@ public class BookingDBAO {
 		}
 
 		releaseConnection();
-//		Collections.sort(bookings);
+		Collections.sort(bookings);
 
 		return bookings;
 	}

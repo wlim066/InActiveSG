@@ -10,6 +10,25 @@
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
 	rel="stylesheet">
+<style>
+.sorting-asc::after {
+	content: " ▲";
+	color: blue; /* Make it more visible for debugging */
+}
+
+.sorting-desc::after {
+	content: " ▼";
+	color: blue; /* Make it more visible for debugging */
+}
+
+#bookingsTable th {
+	cursor: pointer;
+}
+/* Add a debug style */
+.debug-border {
+	border: 2px solid red !important;
+}
+</style>
 </head>
 <body>
 	<div class="container">
@@ -78,14 +97,23 @@
 
 	<!-- JavaScript to fetch and display bookings using AJAX -->
 	<script>
+    let currentSortColumn = 'bookingid'; // Set an initial sort column
+    let currentSortOrder = 'dsc'; // Set an initial sort order
         // Fetch booking data when the page loads
         window.onload = function() {
             fetchBookings();
+            setupSortingListeners();
+            initializeSorting();
         };
         let bookings = [];
         let currentPage = 1;
         const itemsPerPage = 3; 
 
+        function initializeSorting() {
+            sortBookings(currentSortColumn);
+            updateSortIndicators(currentSortColumn);
+        }
+        
         // Function to fetch bookings via AJAX
         function fetchBookings() {
             const xhr = new XMLHttpRequest();
@@ -96,8 +124,10 @@
                 if (xhr.status === 200) {
                     bookings = JSON.parse(xhr.responseText);
                     console.log("Bookings fetched:", bookings);
+                    sortBookings(currentSortColumn);
                     displayBookings(currentPage);
                     setupPagination();
+                    updateSortIndicators(currentSortColumn);
                 } else {
                     console.error("Failed to fetch bookings:", xhr.status, xhr.statusText);
                 }
@@ -135,9 +165,10 @@
 
             xhr.send("_method=DELETE&id=" + encodeURIComponent(bookingId));
         }
- 
- function displayBookings(page) {
-	 console.log("displayBookings: "+ page);
+	
+	// Updated displayBookings function
+	function displayBookings(page) {
+	    /* console.log("displayBookings: " + page); */
 	    const tableBody = document.getElementById("bookingsBody");
 	    if (!tableBody) {
 	        console.error("Table body element not found");
@@ -156,46 +187,25 @@
 	        document.getElementById("noBookingsAlert").style.display = "none";
 	    }
 
-	    pageBookings.forEach(function(booking, index) {
+	    pageBookings.forEach(function(booking) {
 	        const row = document.createElement("tr");
 	        
-	        const idCell = document.createElement("td");
-	        idCell.textContent = booking.bookingId || '';
-	        row.appendChild(idCell);
+	        const columns = ['bookingId', 'email', 'facilityId', 'facilityName', 'location', 'date', 'timeslot'];
+	        columns.forEach(column => {
+	            const cell = document.createElement("td");
+	            cell.textContent = booking[column] || '';
+	            row.appendChild(cell);
+	        });
 	        
-	        const emailCell = document.createElement("td");
-	        emailCell.textContent = booking.email || '';
-	        row.appendChild(emailCell);
-
-	        const facilityCell = document.createElement("td");
-	        facilityCell.textContent = booking.facilityId || '';
-	        row.appendChild(facilityCell);
-	        
-	        const facilityNameCell = document.createElement("td");
-	        facilityNameCell.textContent = booking.facilityName || '';
-	        row.appendChild(facilityNameCell);
-	      
-	        const facilityLocationCell = document.createElement("td");
-	        facilityLocationCell.textContent = booking.location || '';
-	        row.appendChild(facilityLocationCell);
-
-	        const dateCell = document.createElement("td");
-	        dateCell.textContent = booking.date || '';
-	        row.appendChild(dateCell);
-
-	        const timeslotCell = document.createElement("td");
-	        timeslotCell.textContent = booking.timeslot || '';
-	        row.appendChild(timeslotCell);
-	        
-            const actionCell = document.createElement("td");
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "Delete";
-            deleteButton.classList.add("btn", "btn-danger", "btn-sm");
-            deleteButton.onclick = function() {
-                showCancelConfirmModal(booking);
-            };
-            actionCell.appendChild(deleteButton);
-            row.appendChild(actionCell);
+	        const actionCell = document.createElement("td");
+	        const deleteButton = document.createElement("button");
+	        deleteButton.textContent = "Delete";
+	        deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+	        deleteButton.onclick = function() {
+	            showCancelConfirmModal(booking);
+	        };
+	        actionCell.appendChild(deleteButton);
+	        row.appendChild(actionCell);
 
 	        tableBody.appendChild(row);
 	    });
@@ -216,6 +226,80 @@
 	  
 	  modal.show();
 	}
+  
+//Function to setup sorting listeners
+  function setupSortingListeners() {
+      const headers = document.querySelectorAll('#bookingsTable th');
+      headers.forEach((header, index) => {
+          if (index < headers.length - 1) { // Exclude the "Cancel Booking" column
+        	  /* console.log(header); */
+              header.style.cursor = 'pointer';
+              header.addEventListener('click', () => {
+                  const column = header.textContent.toLowerCase().replace(/\s+/g, '');
+                  sortBookings(column);
+              });
+          }
+      });
+  }
+
+  // Function to sort bookings
+  function sortBookings(column) {
+      if (currentSortColumn === column) {
+          // If clicking the same column, reverse the sort order
+          currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+          // If clicking a new column, set it as the current sort column and default to ascending order
+          currentSortColumn = column;
+          currentSortOrder = 'asc';
+      }
+
+      bookings.sort((a, b) => {
+         let valueA = a[column];
+          let valueB = b[column]; 
+
+          // Handle numeric sorting for bookingId and facilityId
+          if (column === 'bookingid' || column === 'facilityid') {
+              valueA = a[column === 'bookingid' ? 'bookingId' : 'facilityId'];
+              valueB = b[column === 'bookingid' ? 'bookingId' : 'facilityId'];
+             /*  console.log(`Sorting ${column}:`, valueA, valueB); */
+              return currentSortOrder === 'asc' 
+                  ? parseInt(valueA) - parseInt(valueB) 
+                  : parseInt(valueB) - parseInt(valueA);
+          }
+
+          // Handle date sorting
+          if (column === 'date') {
+              valueA = new Date(valueA);
+              valueB = new Date(valueB);
+          }
+          
+          // Handle sorting for facility name (case-insensitive)
+          if (column === 'facility') {
+              valueA = a.facilityName.toLowerCase();
+              valueB = b.facilityName.toLowerCase();
+          }
+
+          if (valueA < valueB) return currentSortOrder === 'asc' ? -1 : 1;
+          if (valueA > valueB) return currentSortOrder === 'asc' ? 1 : -1;
+          return 0;
+      });
+
+      displayBookings(currentPage);
+      updateSortIndicators(column);
+  }
+
+  // Function to update sort indicators
+  function updateSortIndicators(column) {
+	    const headers = document.querySelectorAll('#bookingsTable th');
+	    headers.forEach(header => {
+	        const headerColumn = header.textContent.toLowerCase().replace(/\s+/g, '');
+	        header.classList.remove('sorting-asc', 'sorting-desc');
+	        if (headerColumn === column) {
+	            header.classList.add(currentSortOrder === 'asc' ? 'sorting-asc' : 'sorting-desc');
+	        }
+	    });
+	}
+
   
  function setupPagination() {
 	 console.log("Setting up pagination");
