@@ -5,6 +5,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta property="og:description"
+	content="Check out this booking for Facility Name on Date at Location!" />
 <title>Bookings</title>
 <!-- Include Bootstrap CSS -->
 <link
@@ -44,6 +46,7 @@
 					<th scope="col">Location</th>
 					<th scope="col">Date</th>
 					<th scope="col">Timeslot</th>
+					<th scope="col">Share</th>
 					<th scope="col">Cancel Booking</th>
 				</tr>
 			</thead>
@@ -196,6 +199,29 @@
 	            cell.textContent = booking[column] || '';
 	            row.appendChild(cell);
 	        });
+	             
+	        const shareCell = document.createElement("td");
+	    /*     shareCell.style.display = "flex";
+	        shareCell.style.flexDirection = "column"; 
+	        shareCell.style.gap = "3px"; */
+	        const whatsappButton = document.createElement("button");
+	        whatsappButton.textContent = "Share on WhatsApp";
+	        whatsappButton.classList.add("btn", "btn-primary", "btn-sm");
+	        whatsappButton.onclick = function() {
+	            shareOnWhatsApp(booking);
+	        };
+	        
+	        const facebookButton = document.createElement("button");
+	        facebookButton.textContent = "Share on Facebook";
+	        facebookButton.classList.add("btn", "btn-primary", "btn-sm");
+	        facebookButton.onclick = function() {
+	            shareOnFacebook(booking);
+	        };
+	        
+	        shareCell.appendChild(whatsappButton);
+	        /* shareCell.appendChild(facebookButton); */
+	        
+	        row.appendChild(shareCell);
 	        
 	        const actionCell = document.createElement("td");
 	        const deleteButton = document.createElement("button");
@@ -357,6 +383,44 @@
 	    }
 	    li.appendChild(a);
 	    parent.appendChild(li);
+	}
+	
+	function shareOnWhatsApp(booking) {
+		 var message = "Join me!\n"+ "Booking Details:\n" +
+         "Facility: " + (booking.facilityName) + "\n" +
+         "Location: " + (booking.location) + "\n" +
+         "Date: " + (booking.date) + "\n" +
+         "Timeslot: " + (booking.timeslot);
+	    
+	    const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+	    window.open(whatsappUrl, '_blank');
+	}
+	
+	function shareOnFacebook(booking) {
+		updateMetaDescription(booking)
+	    const bookingUrl = "http://localhost:8080/InActiveSG/bookings.jsp?bookingId";
+	    const facebookUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(bookingUrl);
+	    window.open(facebookUrl, '_blank');
+	}
+	
+	//for sharing on facebook
+	function updateMetaDescription(booking) {
+	    // Create or update the meta description tag
+	    const metaDescription = document.querySelector('meta[name="description"]');
+	    
+	    const descriptionContent = "Facility: " + booking.facilityName + "," + "Location: " + booking.location 
+	    + "," + "Date: " + booking.date + "," + "Timeslot: " + booking.timeslot;
+	    console.log(descriptionContent);
+	    if (metaDescription) {
+	        // If meta tag already exists, update it
+	        metaDescription.setAttribute('content', descriptionContent);
+	    } else {
+	        // If meta tag doesn't exist, create and append it to the head
+	        const newMetaDescription = document.createElement('meta');
+	        newMetaDescription.setAttribute('name', 'description');
+	        newMetaDescription.setAttribute('content', descriptionContent);
+	        document.head.appendChild(newMetaDescription);
+	    }
 	}
 	
     </script>
